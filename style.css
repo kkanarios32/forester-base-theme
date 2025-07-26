@@ -1,5 +1,16 @@
 /* SPDX-License-Identifier: CC0-1.0 */
 
+.frontmatter-image {
+  float: left;
+  margin-right: 10px;
+  margin-top: 1px;
+}
+
+.frontmatter-image img {
+  max-height: 100%;
+  width: 80px;
+}
+
 .katex {
  font-size: 1.15em !important;
 }
@@ -155,6 +166,10 @@ mrow:hover {
   color: #aaa;
 }
 
+.metadata {
+  overflow: hidden;
+}
+
 .block.hide-metadata>details>summary>header>.metadata {
   display: none;
 }
@@ -191,6 +206,16 @@ footer h2 {
     transition: ease all .2s;
   }
 
+  #grid-wrapper {
+    display: grid;
+    justify-content: center;
+  }
+
+  #grid-wrapper > article {
+    max-width: 90ex;
+    width: 100%;
+  }
+
   #grid-wrapper>nav {
     display: none;
     transition: ease all .2s;
@@ -207,6 +232,7 @@ footer h2 {
   #grid-wrapper {
     display: grid;
     grid-template-columns: 90ex;
+    justify-content: center;
   }
 }
 
@@ -542,7 +568,6 @@ address {
   display: inline;
 }
 
-
 .metadata ul {
   padding-left: 0;
   display: inline;
@@ -557,7 +582,7 @@ address {
 }
 
 .metadata ul li {
-  display: inline
+  display: inline;
 }
 
 img {
