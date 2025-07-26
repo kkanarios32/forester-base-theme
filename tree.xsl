@@ -26,6 +26,7 @@
       </head>
       <body>
         <ninja-keys placeholder="Start typing a note title or ID"></ninja-keys>
+
         <xsl:if test="not(/f:tree[@root = 'true'])">
           <header class="header">
             <nav class="nav">
@@ -216,38 +217,71 @@
   </xsl:template>
 
   <xsl:template match="f:frontmatter">
-    <header>
-      <h1>
-        <span class="taxon">
-          <xsl:apply-templates select=".." mode="tree-taxon-with-number">
-            <xsl:with-param name="suffix">.&#160;</xsl:with-param>
-          </xsl:apply-templates>
-        </span>
+      <header>
+        <xsl:if test="f:meta[@name='image']">
+          <xsl:apply-templates select="f:meta[@name='image']" />
+        </xsl:if>
+        <h1>
+          <span class="taxon">
+            <xsl:apply-templates select=".." mode="tree-taxon-with-number">
+              <xsl:with-param name="suffix">.&#160;</xsl:with-param>
+            </xsl:apply-templates>
+          </span>
 
-        <xsl:apply-templates select="f:title" />
-        <xsl:text>&#032;</xsl:text>
-        <xsl:apply-templates select="f:display-uri" />
-        <xsl:text>&#032;</xsl:text>
-        <xsl:apply-templates select="f:source-path" />
-      </h1>
-      <div class="metadata">
-        <ul>
-          <xsl:apply-templates select="f:date" />
-          <xsl:if test="not(f:meta[@name = 'author']/.='false')">
-            <xsl:apply-templates select="f:authors" />
+          <xsl:apply-templates select="f:title" />
+          <xsl:text>&#032;</xsl:text>
+          <xsl:apply-templates select="f:display-uri" />
+          <xsl:text>&#032;</xsl:text>
+          <xsl:apply-templates select="f:source-path" />
+        </h1>
+        <div class="metadata">
+
+          <xsl:if test="f:taxon='Reference'">
+          <xsl:if test="f:date[string-length(normalize-space(.)) > 0]">
+            <ul>
+              <xsl:apply-templates select="f:date" />
+            </ul>
+            <br></br>
           </xsl:if>
-          <xsl:apply-templates select="f:meta[@name='position']" />
-          <xsl:apply-templates select="f:meta[@name='institution']" />
-          <xsl:apply-templates select="f:meta[@name='venue']" />
-          <xsl:apply-templates select="f:meta[@name='source']" />
-          <xsl:apply-templates select="f:meta[@name='doi']" />
-          <xsl:apply-templates select="f:meta[@name='orcid']" />
-          <xsl:apply-templates select="f:meta[@name='external']" />
-          <xsl:apply-templates select="f:meta[@name='slides']" />
-          <xsl:apply-templates select="f:meta[@name='video']" />
-        </ul>
-      </div>
-    </header>
+          <xsl:if test="not(f:meta[@name = 'author']/.='false') and f:author[string-length(normalize-space(.)) > 0]">
+            <ul>
+            <xsl:apply-templates select="f:authors" />
+            </ul>
+            <br></br>
+          </xsl:if>
+          <ul>
+            <xsl:apply-templates select="f:meta[@name='orcid']" />
+            <xsl:apply-templates select="f:meta[@name='doi']" />
+            <xsl:apply-templates select="f:meta[@name='external']" />
+            <xsl:apply-templates select="f:meta[@name='position']" />
+            <xsl:apply-templates select="f:meta[@name='institution']" />
+            <xsl:apply-templates select="f:meta[@name='venue']" />
+            <xsl:apply-templates select="f:meta[@name='source']" />
+            <xsl:apply-templates select="f:meta[@name='slides']" />
+            <xsl:apply-templates select="f:meta[@name='paper']" />
+            <xsl:apply-templates select="f:meta[@name='video']" />
+          </ul>
+          </xsl:if>
+          <xsl:if test="not(f:taxon='Reference')">
+          <ul>
+            <xsl:apply-templates select="f:date" />
+            <xsl:if test="not(f:meta[@name = 'author']/.='false')">
+              <xsl:apply-templates select="f:authors" />
+            </xsl:if>
+            <xsl:apply-templates select="f:meta[@name='position']" />
+            <xsl:apply-templates select="f:meta[@name='institution']" />
+            <xsl:apply-templates select="f:meta[@name='venue']" />
+            <xsl:apply-templates select="f:meta[@name='source']" />
+            <xsl:apply-templates select="f:meta[@name='orcid']" />
+            <xsl:apply-templates select="f:meta[@name='doi']" />
+            <xsl:apply-templates select="f:meta[@name='external']" />
+            <xsl:apply-templates select="f:meta[@name='slides']" />
+            <xsl:apply-templates select="f:meta[@name='paper']" />
+            <xsl:apply-templates select="f:meta[@name='video']" />
+          </ul>
+          </xsl:if>
+        </div>
+      </header>
   </xsl:template>
 
   <xsl:template match="f:ref">

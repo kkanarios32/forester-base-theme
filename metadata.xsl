@@ -132,6 +132,12 @@
     </pre>
   </xsl:template>
 
+  <xsl:template match="f:meta[@name='image']">
+    <div class="frontmatter-image">
+      <img class="frontmatter-image" src="{.}" />
+    </div>
+  </xsl:template>
+
   <xsl:template match="f:meta[@name='venue']|f:meta[@name='position']|f:meta[@name='institution']|f:meta[@name='source']">
     <li class="meta-item">
       <xsl:apply-templates />
@@ -150,6 +156,14 @@
     <li class="meta-item">
       <a class="link external" href="{.}">
         <xsl:text>Slides</xsl:text>
+      </a>
+    </li>
+  </xsl:template>
+
+  <xsl:template match="f:meta[@name='paper']">
+    <li class="meta-item">
+      <a class="link external" href="{.}">
+        <xsl:text>Paper</xsl:text>
       </a>
     </li>
   </xsl:template>

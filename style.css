@@ -1,5 +1,16 @@
 /* SPDX-License-Identifier: CC0-1.0 */
 
+.frontmatter-image {
+  float: left;
+  margin-right: 10px;
+  margin-top: 1px;
+}
+
+.frontmatter-image img {
+  max-height: 100%;
+  width: 80px;
+}
+
 .katex {
  font-size: 1.15em !important;
 }
@@ -8,10 +19,10 @@
 @font-face {
   font-display: swap;
   /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
-  font-family: 'Inria Sans';
+  font-family: 'Facebook Sans';
   font-style: normal;
   font-weight: 300;
-  src: url('fonts/inria-sans-v14-latin_latin-ext-300.woff2') format('woff2');
+  src: url('fonts/FacebookSansLight.woff2') format('woff2');
   /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
 }
 
@@ -19,10 +30,10 @@
 @font-face {
   font-display: swap;
   /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
-  font-family: 'Inria Sans';
+  font-family: 'Facebook Sans';
   font-style: italic;
   font-weight: 300;
-  src: url('fonts/inria-sans-v14-latin_latin-ext-300italic.woff2') format('woff2');
+  src: url('fonts/FacebookSansLightItalic.woff2') format('woff2');
   /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
 }
 
@@ -30,10 +41,10 @@
 @font-face {
   font-display: swap;
   /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
-  font-family: 'Inria Sans';
+  font-family: 'Facebook Sans';
   font-style: normal;
   font-weight: 400;
-  src: url('fonts/inria-sans-v14-latin_latin-ext-regular.woff2') format('woff2');
+  src: url('fonts/FacebookSansRegular.woff2') format('woff2');
   /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
 }
 
@@ -41,10 +52,10 @@
 @font-face {
   font-display: swap;
   /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
-  font-family: 'Inria Sans';
+  font-family: 'Facebook Sans';
   font-style: italic;
   font-weight: 400;
-  src: url('fonts/inria-sans-v14-latin_latin-ext-italic.woff2') format('woff2');
+  src: url('fonts/FacebookSansItalic.woff2') format('woff2');
   /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
 }
 
@@ -52,10 +63,10 @@
 @font-face {
   font-display: swap;
   /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
-  font-family: 'Inria Sans';
+  font-family: 'Facebook Sans';
   font-style: normal;
   font-weight: 700;
-  src: url('fonts/inria-sans-v14-latin_latin-ext-700.woff2') format('woff2');
+  src: url('fonts/FacebookSansBold.woff2') format('woff2');
   /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
 }
 
@@ -63,10 +74,10 @@
 @font-face {
   font-display: swap;
   /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
-  font-family: 'Inria Sans';
+  font-family: 'Facebook Sans';
   font-style: italic;
   font-weight: 700;
-  src: url('fonts/inria-sans-v14-latin_latin-ext-700italic.woff2') format('woff2');
+  src: url('fonts/FacebookSansBoldItalic.woff2') format('woff2');
   /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
 }
 
@@ -128,7 +139,7 @@ code {
 }
 
 body {
-  font-family: "Inria Sans";
+  font-family: "Facebook Sans";
   font-size: 12pt;
   line-height: 1.55;
 }
@@ -153,6 +164,10 @@ mrow:hover {
 
 .logo a:hover {
   color: #aaa;
+}
+
+.metadata {
+  overflow: hidden;
 }
 
 .block.hide-metadata>details>summary>header>.metadata {
@@ -191,6 +206,16 @@ footer h2 {
     transition: ease all .2s;
   }
 
+  #grid-wrapper {
+    display: grid;
+    justify-content: center;
+  }
+
+  #grid-wrapper > article {
+    max-width: 90ex;
+    width: 100%;
+  }
+
   #grid-wrapper>nav {
     display: none;
     transition: ease all .2s;
@@ -207,6 +232,7 @@ footer h2 {
   #grid-wrapper {
     display: grid;
     grid-template-columns: 90ex;
+    justify-content: center;
   }
 }
 
@@ -434,7 +460,7 @@ td.macro-doc {
 }
 
 [aria-label][role~="tooltip"]::after {
-  font-family: "Inria Sans";
+  font-family: "Facebook Sans";
 }
 
 .tooltip {
@@ -542,7 +568,6 @@ address {
   display: inline;
 }
 
-
 .metadata ul {
   padding-left: 0;
   display: inline;
@@ -557,7 +582,7 @@ address {
 }
 
 .metadata ul li {
-  display: inline
+  display: inline;
 }
 
 img {
