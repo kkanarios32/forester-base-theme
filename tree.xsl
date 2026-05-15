@@ -21,7 +21,32 @@
         </script>
         <script type="module" src="{/f:tree/@base-url}forester.js"></script>
         <script>
-          <xsl:text>(function(){var ws=new WebSocket("ws://"+location.host+"/livereload");ws.onopen=function(){ws.send(JSON.stringify({command:"hello",protocols:["http://livereload.com/protocols/official-7"],ver:"2.0.0"}));};ws.onmessage=function(e){var m=JSON.parse(e.data);if(m.command=="hello"){ws.send(JSON.stringify({command:"info",url:location.href,plugins:{}}));}else if(m.command=="reload"){location.reload();}};})();</xsl:text>
+          <xsl:text disable-output-escaping="yes"><![CDATA[
+(function(){
+  var ws = new WebSocket("ws://" + location.host + "/livereload");
+  ws.onopen = function() {
+    ws.send(JSON.stringify({command:"hello", protocols:["http://livereload.com/protocols/official-7"], ver:"2.0.0"}));
+  };
+  ws.onmessage = function(e) {
+    var m = JSON.parse(e.data);
+    if (m.command == "hello") {
+      ws.send(JSON.stringify({command:"info", url:location.href, plugins:{}}));
+    } else if (m.command == "reload") {
+      fetch('http://localhost:1235/current-slug')
+        .then(function(r){ return r.text(); })
+        .then(function(slug){
+          var cur = location.pathname.split('/').filter(Boolean)[0] || '';
+          if (slug && slug !== cur) {
+            location.href = '/' + slug + '/';
+          } else {
+            location.reload();
+          }
+        })
+        .catch(function(){ location.reload(); });
+    }
+  };
+})();
+          ]]></xsl:text>
         </script>
         <script>
           <xsl:text disable-output-escaping="yes"><![CDATA[
