@@ -420,6 +420,13 @@ document.addEventListener('keydown', function(e) {
   <xsl:template match="f:backmatter//f:backmatter">
   </xsl:template>
 
+  <!-- Spaced-repetition cards (\taxon{Card}, trees/cards/) are Anki prompts;
+       keep them out of the backlink/context footer of the notes they link. A
+       card transcluded into a note's mainmatter still renders — this only
+       suppresses cards appearing as backlinks. -->
+  <xsl:template match="f:backmatter//f:tree[normalize-space(f:frontmatter/f:taxon) = 'Card']" priority="10">
+  </xsl:template>
+
   <xsl:template match="f:tree[f:mainmatter[*] or not(@hidden-when-empty = 'true')]">
     <section>
       <xsl:attribute name="lang">
