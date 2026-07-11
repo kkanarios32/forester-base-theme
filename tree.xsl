@@ -455,7 +455,9 @@ document.addEventListener('keydown', function(e) {
       <xsl:choose>
         <xsl:when test="not(@show-heading='false')">
           <details id="{generate-id(.)}">
-            <xsl:if test="not(@expanded = 'false')">
+            <!-- Cards (\taxon{Card}) start collapsed: the question (summary)
+                 shows, the answer stays hidden until clicked — a flashcard. -->
+            <xsl:if test="not(@expanded = 'false') and not(normalize-space(f:frontmatter/f:taxon) = 'Card')">
               <xsl:attribute name="open">open</xsl:attribute>
             </xsl:if>
             <summary>
