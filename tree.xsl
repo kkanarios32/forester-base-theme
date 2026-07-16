@@ -288,7 +288,7 @@ document.addEventListener('keydown', function(e) {
             </ul>
             <br></br>
           </xsl:if>
-          <xsl:if test="not(f:meta[@name = 'author']/.='false') and f:author[string-length(normalize-space(.)) > 0]">
+          <xsl:if test="not(f:meta[@name = 'author']/.='false') and f:authors/f:author[string-length(normalize-space(.)) > 0]">
             <ul>
             <xsl:apply-templates select="f:authors" />
             </ul>
