@@ -27,6 +27,36 @@
     </xsl:element>
   </xsl:template>
 
+  <!-- Utterances comments (the .comments div emitted by \comments in
+       base-macros) belong to a post's own page, not to any page that
+       transcludes it. Render the block only when its containing tree is the
+       top-level document tree; when the tree is expanded on an index or the
+       home page it is nested under another tree, so drop the whole block —
+       divider, loader script, and the injected comment thread. -->
+  <xsl:template match="html:div[@class = 'comments']">
+    <xsl:if test="not(ancestor::f:tree[1]/parent::*)">
+      <xsl:element namespace="http://www.w3.org/1999/xhtml" name="div">
+        <xsl:apply-templates select="@* | node()" />
+      </xsl:element>
+    </xsl:if>
+  </xsl:template>
+
+  <!-- The Buttondown subscribe form (emitted by \subscribe in base-macros)
+       gets the same treatment, and for the same reason: Forester embeds a
+       tree's full content wherever it is transcluded or hover-previewed, so
+       without this the form on the Blog page also turns up on the home page,
+       the about page, and every index that links to it. Render it only when
+       its containing tree is the top-level document tree. This cannot live in
+       the macro — it depends on where the tree sits in the document, which is
+       only known here. -->
+  <xsl:template match="html:form[@class = 'embeddable-buttondown-form']">
+    <xsl:if test="not(ancestor::f:tree[1]/parent::*)">
+      <xsl:element namespace="http://www.w3.org/1999/xhtml" name="form">
+        <xsl:apply-templates select="@* | node()" />
+      </xsl:element>
+    </xsl:if>
+  </xsl:template>
+
   <xsl:template match="mml:*">
     <xsl:element namespace="http://www.w3.org/1998/Math/MathML" name="{local-name()}">
       <xsl:apply-templates select="@* | node()" />
