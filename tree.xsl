@@ -9,7 +9,12 @@
   <xsl:template match="/">
     <html xmlns="http://www.w3.org/1999/xhtml" data-base-url="{/f:tree/@base-url}">
       <head>
-        <meta name="viewport" content="width=device-width" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <link rel="icon" href="{/f:tree/@base-url}favicon.ico" sizes="any" />
+        <link rel="icon" type="image/png" sizes="32x32" href="{/f:tree/@base-url}favicon-32x32.png" />
+        <link rel="icon" type="image/png" sizes="16x16" href="{/f:tree/@base-url}favicon-16x16.png" />
+        <link rel="apple-touch-icon" href="{/f:tree/@base-url}apple-touch-icon.png" />
+        <link rel="alternate" type="application/atom+xml" title="Blog" href="{/f:tree/@base-url}0002/atom.xml" />
         <link rel="stylesheet" href="{/f:tree/@base-url}style.css" />
         <link rel="stylesheet" href="{/f:tree/@base-url}katex.min.css" />
         <script type="text/javascript">
@@ -20,6 +25,19 @@
           </xsl:if>
         </script>
         <script type="module" src="{/f:tree/@base-url}forester.js"></script>
+        <script src="{/f:tree/@base-url}highlight.min.js"></script>
+        <script src="{/f:tree/@base-url}highlightjs-line-numbers.min.js"></script>
+        <script>
+          <xsl:text disable-output-escaping="yes"><![CDATA[
+window.addEventListener('load', function () {
+  if (!window.hljs) return;
+  document.querySelectorAll('pre code').forEach(function (el) {
+    hljs.highlightElement(el);
+    if (hljs.lineNumbersBlock) hljs.lineNumbersBlock(el, { singleLine: true });
+  });
+});
+          ]]></xsl:text>
+        </script>
         <script>
           <xsl:text disable-output-escaping="yes"><![CDATA[
 (function(){
@@ -73,13 +91,27 @@ document.addEventListener('keydown', function(e) {
         <ninja-keys placeholder="Start typing a note title or ID"></ninja-keys>
 
         <xsl:if test="not(/f:tree[@root = 'true'])">
+          <!-- Back-to-home chrome, on every page but the root. The chevron is
+               an inline SVG rather than a guillemet or an arrow character: at
+               this size a text arrow sets differently in every fallback font
+               and never optically aligns with the label. Inline keeps the
+               theme free of an icon font or any external request, which
+               matters because these pages are transformed in the browser.
+               aria-hidden on the glyph leaves "Home" as the accessible name.
+
+               The xmlns on the <svg> is load-bearing. Literal elements written
+               inside the <html> above inherit its XHTML namespace, and these
+               pages are served as XML, so namespaces are matched strictly — an
+               <svg> left in the XHTML namespace parses as an unknown inline
+               element and paints nothing at all. -->
           <header class="header">
             <nav class="nav">
-              <div class="logo">
-                <a href="{/f:tree/@base-url}index.html" title="Home">
-                  <xsl:text>« Home</xsl:text>
-                </a>
-              </div>
+              <a class="home-link" href="{/f:tree/@base-url}index.html">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+                  <path d="M9.75 3.5 5.25 8l4.5 4.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+                <span>Home</span>
+              </a>
             </nav>
           </header>
         </xsl:if>
@@ -224,8 +256,29 @@ document.addEventListener('keydown', function(e) {
     </ul>
   </xsl:template>
 
+  <!-- On an index page (\meta{index}{true}), a collapsed entry's title links to
+       the entry's own page instead of unfolding it in place. The decision is
+       made here rather than in a separate mode so the whole f:frontmatter
+       template — taxon, slug, date, author — is reused untouched; only the
+       title's rendering changes. See the index-entry rule on f:tree below for
+       the conditions, which this repeats. -->
   <xsl:template match="f:frontmatter/f:title">
-    <xsl:apply-templates />
+    <xsl:variable name="is-index-entry" select="
+      ../../@expanded = 'false'
+      and not(../../@show-heading = 'false')
+      and not(../f:meta[@name = 'index'] = 'true')
+      and not(ancestor::f:backmatter)
+      and ../../ancestor::f:tree[1]/f:frontmatter/f:meta[@name = 'index'] = 'true'" />
+    <xsl:choose>
+      <xsl:when test="$is-index-entry and ../f:route">
+        <a class="index-entry-link" href="{../f:route}">
+          <xsl:apply-templates />
+        </a>
+      </xsl:when>
+      <xsl:otherwise>
+        <xsl:apply-templates />
+      </xsl:otherwise>
+    </xsl:choose>
   </xsl:template>
 
   <xsl:template match="f:mainmatter">
@@ -304,6 +357,7 @@ document.addEventListener('keydown', function(e) {
             <xsl:apply-templates select="f:meta[@name='source']" />
             <xsl:apply-templates select="f:meta[@name='slides']" />
             <xsl:apply-templates select="f:meta[@name='paper']" />
+            <xsl:apply-templates select="f:meta[@name='poster']" />
             <xsl:apply-templates select="f:meta[@name='video']" />
           </ul>
           </xsl:if>
@@ -322,6 +376,7 @@ document.addEventListener('keydown', function(e) {
             <xsl:apply-templates select="f:meta[@name='external']" />
             <xsl:apply-templates select="f:meta[@name='slides']" />
             <xsl:apply-templates select="f:meta[@name='paper']" />
+            <xsl:apply-templates select="f:meta[@name='poster']" />
             <xsl:apply-templates select="f:meta[@name='video']" />
           </ul>
           </xsl:if>
@@ -425,6 +480,48 @@ document.addEventListener('keydown', function(e) {
        card transcluded into a note's mainmatter still renders — this only
        suppresses cards appearing as backlinks. -->
   <xsl:template match="f:backmatter//f:tree[normalize-space(f:frontmatter/f:taxon) = 'Card']" priority="10">
+  </xsl:template>
+
+  <!-- Index-page entries. A tree marked \meta{index}{true} is a navigation page
+       — the home page, 0002 Blog, RCNT — rather than a piece of writing, and
+       its collapsed entries are a listing, not content folded away. Render
+       those as their usual heading (taxon, linked title, slug, date, author)
+       with no <details>, so clicking navigates to the entry instead of
+       unfolding it in place.
+
+       Nothing that was visible becomes hidden. The rule fires only on entries
+       the page already renders collapsed (@expanded='false'), so anything
+       transcluded expanded keeps its body. An index page nested inside another
+       index page is exempt via the f:meta test — that is what keeps the home
+       page's Research subtree an expandable block while the papers listed
+       under it become links. Backlink context in f:backmatter is exempt too,
+       and the page's own top-level rendering is untouched.
+
+       Higher priority than the general f:tree rule below, whose pattern also
+       matches these. The f:frontmatter/f:title template above repeats these
+       conditions to decide whether to wrap the title in a link. -->
+  <xsl:template priority="5" match="f:tree[
+    @expanded = 'false'
+    and not(@show-heading = 'false')
+    and not(f:frontmatter/f:meta[@name = 'index'] = 'true')
+    and not(ancestor::f:backmatter)
+    and ancestor::f:tree[1]/f:frontmatter/f:meta[@name = 'index'] = 'true']">
+    <section>
+      <xsl:choose>
+        <xsl:when test="@show-metadata = 'false'">
+          <xsl:attribute name="class">block index-entry hide-metadata</xsl:attribute>
+        </xsl:when>
+        <xsl:otherwise>
+          <xsl:attribute name="class">block index-entry</xsl:attribute>
+        </xsl:otherwise>
+      </xsl:choose>
+      <xsl:if test="f:frontmatter/f:taxon">
+        <xsl:attribute name="data-taxon">
+          <xsl:value-of select="f:frontmatter/f:taxon" />
+        </xsl:attribute>
+      </xsl:if>
+      <xsl:apply-templates select="f:frontmatter" />
+    </section>
   </xsl:template>
 
   <xsl:template match="f:tree[f:mainmatter[*] or not(@hidden-when-empty = 'true')]">

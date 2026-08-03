@@ -71,6 +71,25 @@
   src: url('fonts/XCharter-BoldItalic.woff2') format('woff2');
 }
 
+/* Hanken Grotesk — structural chrome (titles, wordmark, TOC, metadata, and the
+   \paragraph run-in labels), driven by var(--sans). Variable font, wght 100–900,
+   normal + italic. License: OFL, theme/LICENSES/HankenGrotesk.txt */
+@font-face {
+  font-display: swap;
+  font-family: 'Hanken Grotesk';
+  font-style: normal;
+  font-weight: 100 900;
+  src: url('fonts/HankenGrotesk-Variable.woff2') format('woff2-variations');
+}
+
+@font-face {
+  font-display: swap;
+  font-family: 'Hanken Grotesk';
+  font-style: italic;
+  font-weight: 100 900;
+  src: url('fonts/HankenGrotesk-Italic-Variable.woff2') format('woff2-variations');
+}
+
 /* inria-sans-regular - latin_latin-ext */
 @font-face {
   font-display: swap;
@@ -121,7 +140,7 @@
   /* Sans family for structural chrome — titles, wordmark, TOC, metadata, and
      the \paragraph run-in labels. Swap this one value to change the site's
      sans; the serif body font is set directly on `body`. */
-  --sans: 'Facebook Sans';
+  --sans: 'Hanken Grotesk';
 }
 
 h1,
@@ -178,43 +197,193 @@ code {
   font-size: 0.9em;
 }
 
+/* A <code> inside a <pre> (the \codeblock highlight.js target) must not carry
+   the inline-code chrome — the surrounding <pre> already supplies background,
+   padding, and radius. Reset so highlighted blocks read as one panel. */
+pre code,
+pre code.hljs {
+  background: none;
+  padding: 0;
+  border-radius: 0;
+  font-size: inherit;
+}
+
+/* highlight.js token theme — a light, GitHub-flavored palette tuned to the
+   site's serif/teal aesthetic. Tied to the vendored highlight.min.js (run from
+   tree.xsl), so it lives here rather than in a base-macro. */
+.hljs-comment,
+.hljs-quote {
+  color: #6a737d;
+  font-style: italic;
+}
+.hljs-keyword,
+.hljs-selector-tag,
+.hljs-literal,
+.hljs-doctag {
+  color: #d73a49;
+}
+.hljs-string,
+.hljs-regexp,
+.hljs-meta .hljs-string {
+  color: #032f62;
+}
+.hljs-number,
+.hljs-built_in,
+.hljs-builtin-name,
+.hljs-attr,
+.hljs-symbol,
+.hljs-bullet {
+  color: #005cc5;
+}
+.hljs-title,
+.hljs-title.function_,
+.hljs-section,
+.hljs-name,
+.hljs-type,
+.hljs-class .hljs-title {
+  color: #6f42c1;
+}
+.hljs-variable,
+.hljs-template-variable,
+.hljs-params {
+  color: #e36209;
+}
+.hljs-tag,
+.hljs-selector-id,
+.hljs-selector-class {
+  color: #22863a;
+}
+.hljs-meta,
+.hljs-comment.hljs-doctag {
+  color: #6a737d;
+}
+.hljs-emphasis {
+  font-style: italic;
+}
+.hljs-strong {
+  font-weight: 600;
+}
+
+/* Line-number gutter (highlightjs-line-numbers.js builds a two-column table
+   inside the highlighted <code>). Scoped to .hljs-ln so the global table/td
+   rules above don't apply their margins and cell padding. */
+table.hljs-ln {
+  margin: 0;
+  border-collapse: collapse;
+}
+.hljs-ln td {
+  padding: 0;
+  border: none;
+  vertical-align: top;
+  white-space: pre;
+}
+.hljs-ln-numbers {
+  text-align: right;
+  padding-right: 1em !important;
+  width: 1%;
+  white-space: nowrap;
+  user-select: none;
+  -webkit-user-select: none;
+  color: rgba(0, 0, 0, 0.28);
+}
+.hljs-ln-code {
+  padding-left: 0 !important;
+}
+.hljs-ln-n::before {
+  content: attr(data-line-number);
+}
+
+/* Named code block: \codeblockf wraps a \codeblock in a titled panel. The
+   filename bar sits on top; the panel clips the <pre>'s corners so they read
+   as one unit. Tied to the \codeblockf macro, so it lives here. */
+.code-figure {
+  margin: 1em 0;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.code-filename {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.8em;
+  padding: 0.35em 0.9em;
+  color: rgba(0, 0, 0, 0.55);
+  background-color: rgba(0, 100, 100, 0.08);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+.code-figure pre {
+  margin: 0;
+  border-radius: 0;
+}
+
 body {
   font-family: XCharter, Charter, "Bitstream Charter", "Sitka Text", Cambria, Georgia, serif;
   font-size: 12pt;
   line-height: 1.55;
 }
 
-/* Tree and subtree titles (and the wordmark) are sans; body prose is serif. */
+/* Tree and subtree titles are sans; body prose is serif. */
 h1,
 h2,
 h3,
 h4,
 h5,
-h6,
-.logo {
+h6 {
   font-family: var(--sans);
+  font-weight: 700;
 }
 
 math {
  font-size: 1.12em;
 }
 
+/* Display math is the one thing on the site that reliably outgrows a phone.
+   KaTeX ships .katex-display as a plain centred block with no overflow of its
+   own, so a wide equation pushes the whole article past the viewport instead of
+   scrolling within its own line. Give it a scroll container.
+
+   The vertical padding is not decoration. Setting overflow-x on one axis forces
+   the other out of `visible`, so without room to spare the tall parts of an
+   equation — fraction bars, big operators, limits — get clipped by the very box
+   that makes it scrollable. */
+.katex-display {
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 0.5em 0;
+}
+
 mrow:hover {
  background-color: rgba(0, 100, 255, 0.04);
 }
 
-.logo {
-  font-weight: 1000;
-  font-size: 24px;
-}
-
-.logo a {
-  color: #666;
+/* The back-to-home link. Previously a 24px bold "« Home" styled as a wordmark,
+   which read as the page's heading — it outweighed the tree title directly
+   beneath it, and it was the first and largest thing on every page that was
+   not that page's subject. Navigation chrome should be the quietest element
+   on screen, so this sets at label size and lets the title lead. */
+.home-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35em;
+  font-family: var(--sans);
+  font-size: 12pt;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  color: #888;
   text-decoration: none;
+  box-shadow: none;
 }
 
-.logo a:hover {
-  color: #aaa;
+/* Sized in em so the glyph tracks the label, and nudged down a hair: the
+   chevron's optical centre sits above the text's when the two are set
+   flex-centred. */
+.home-link svg {
+  width: 0.8em;
+  height: 0.8em;
+  margin-top: 0.06em;
+}
+
+.home-link:hover {
+  color: #222;
 }
 
 .metadata {
@@ -223,6 +392,12 @@ mrow:hover {
 }
 
 .block.hide-metadata>details>summary>header>.metadata {
+  display: none;
+}
+
+/* Index entries have no <details>, so their header hangs directly off the
+   section — same rule, one level shallower. */
+.block.index-entry.hide-metadata>header>.metadata {
   display: none;
 }
 
@@ -291,7 +466,9 @@ footer h2 {
   #grid-wrapper > article {
     max-width: 90ex;
     width: 100%;
+    grid-column: 1;
   }
+
 
   #grid-wrapper>nav {
     display: none;
@@ -299,32 +476,93 @@ footer h2 {
   }
 }
 
+/* Desktop: a symmetric three-column grid — equal `1fr` flanks keep the
+   90ex article dead-center in the viewport, and the TOC drops into the
+   right flank so it sits off-center without stealing from the centering. */
 @media only screen and (min-width: 1000px) {
   body {
     margin-top: 2em;
-    margin-left: 2em;
+    margin-left: 0;
     transition: ease all .2s;
   }
 
   #grid-wrapper {
     display: grid;
-    grid-template-columns: 90ex;
+    grid-template-columns: 1fr 90ex 1fr;
     justify-content: center;
+  }
+
+  #grid-wrapper>article {
+    grid-column: 2;
+  }
+
+  #grid-wrapper>nav {
+    grid-column: 3;
+    justify-self: start;
+    max-width: 22em;
+  }
+
+  /* Centre the header on the same 90ex measure as the article so the two share
+     a left edge. body has margin-left: 0 at this width, so without this the
+     header starts at the viewport edge — metres left of the prose. */
+  body>header {
+    margin-left: auto;
+    margin-right: auto;
   }
 }
 
+/* Between the mobile breakpoint and the width where a centered article
+   plus a TOC flank actually fit, there isn't room to keep the article
+   centered with the TOC in a gutter — so fall back to the classic
+   left-aligned layout: article then TOC, packed to the left. */
+@media only screen and (min-width: 1000px) and (max-width: 1300px) {
+  body {
+    margin-left: 2em;
+  }
+
+  #grid-wrapper {
+    grid-template-columns: 90ex auto;
+    justify-content: start;
+  }
+
+  #grid-wrapper>article {
+    grid-column: 1;
+  }
+
+  #grid-wrapper>nav {
+    grid-column: 2;
+  }
+
+  /* In this band the article is packed left rather than centred, so undo the
+     auto margins above and let the header ride body's own margin-left. */
+  body>header {
+    margin-left: 0;
+    margin-right: 0;
+  }
+}
+
+/* The back-to-home header sits outside #grid-wrapper, so it does not inherit
+   the grid that centres the article and it has to be aligned to that column by
+   hand — see the two breakpoint blocks above, which do the aligning. Without
+   them the header tracks the body box, which above 1300px has margin-left: 0,
+   pinning it to the very edge of the viewport while the prose sits centred. */
 body>header {
   margin-bottom: 0.5em;
+  max-width: 90ex;
 }
 
+/* min-width: 0 is load-bearing, not tidying. A grid item defaults to
+   min-width: auto, so it refuses to shrink below the intrinsic width of its
+   widest content — a display equation, say. The article then grows past the
+   viewport, and because #grid-wrapper centres its column the excess spills
+   equally off both edges. A browser can only scroll to overflow on the end
+   side, so the left half becomes unreachable and the page reads as a fixed,
+   zoomed-in view of the centre with no way to pan. This lets the article
+   shrink to the viewport and hands the problem to the inner scroll containers
+   (pre, .katex-display), which is where it belongs. */
 #grid-wrapper>article {
   max-width: 90ex;
-  margin-right: auto;
-  grid-column: 1;
-}
-
-#grid-wrapper>nav {
-  grid-column: 2;
+  min-width: 0;
 }
 
 details>summary>header {
@@ -346,7 +584,7 @@ section .block[data-taxon] details>summary>header>h1 {
 
 span.taxon {
   color: #444;
-  font-weight: bolder;
+  font-weight: 500;
 }
 
 
@@ -385,6 +623,46 @@ section.block>details[open] {
 
 .link-list>section.block>details {
   margin-bottom: .25em;
+}
+
+/* Index entries — the listing rows emitted by tree.xsl's index-entry rule for
+   a collapsed transclusion inside a \meta{index}{true} page. They render the
+   same heading a collapsed <details> would, minus the <details>, so these
+   mirror the collapsed-entry rules above one level shallower. */
+section.block.index-entry {
+  margin-bottom: 0.4em;
+  /* Set at body size (12pt) rather than the 13pt a collapsed <details> heading
+     uses: a listing row should read as a peer of the prose, not as a heading.
+     Dropping below body size is what makes the metadata line strain, since it
+     carries no size of its own — sizing the section rather than the h1 is what
+     keeps the title and that metadata line in proportion. */
+  font-size: 12pt;
+}
+
+.link-list>section.block.index-entry {
+  margin-bottom: .25em;
+}
+
+.index-entry>header {
+  display: inline;
+}
+
+.index-entry h1 {
+  font-size: inherit;
+  display: inline;
+}
+
+/* No underline on the title. Dotting every row turns a listing into visual
+   noise, and unlike an inline prose link the row does not need to announce
+   itself — the whole column is navigation, and the slug beside each title is
+   already a link. The hover tint carries the affordance. */
+a.index-entry-link {
+  box-shadow: none;
+  text-decoration: none;
+}
+
+a.index-entry-link:hover {
+  background-color: rgba(0, 100, 255, .1);
 }
 
 nav#toc {
@@ -720,4 +998,26 @@ ol li ol li ol {
 .info {
  background-color: #bbb;
  color: white;
+}
+
+/* The two rules below belong with \subscribe and the home page's profile
+   figure, both of which style themselves inline. They live here only because
+   :hover and @media cannot be expressed in a style attribute. */
+
+.embeddable-buttondown-form input[type="submit"]:hover {
+  background-color: rgba(60, 90, 180, 0.1);
+}
+
+/* Narrow screens: the profile figure floats right at 30% of the column, which
+   below roughly 700px leaves a picture too small to read beside a text column
+   too narrow to set. Drop the float and let it run full width above the prose. */
+@media only screen and (max-width: 700px) {
+  .profile-figure {
+    float: none !important;
+    width: 100% !important;
+    max-width: 18em;
+    margin-left: auto !important;
+    margin-right: auto;
+    margin-bottom: 1em !important;
+  }
 }
