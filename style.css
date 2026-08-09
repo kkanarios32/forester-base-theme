@@ -352,30 +352,14 @@ section section[data-taxon="Person"]>details>summary>header>h1>.taxon {
   display: none;
 }
 
-/* Spaced-repetition cards (trees/cards/, \taxon{Card}). Paint the whole card —
-   question (title) and answer (body) — as one blue block with a card icon, so
-   it reads as a self-contained flashcard inline and when transcluded into the
-   concept it tests. */
-.block[data-taxon="Card"] {
-  background-color: aliceblue;
-  border-left: 4px solid steelblue;
-  border-radius: 4px;
-  padding: 2px 12px 6px;
-  margin-bottom: 1em;
-}
-
-.block[data-taxon="Card"]>details>summary>header>h1 {
-  font-family: XCharter, Charter, "Bitstream Charter", "Sitka Text", Cambria, Georgia, serif;
-  font-weight: normal;
-}
-
-.block[data-taxon="Card"]>details>summary>header>h1>.taxon {
-  color: steelblue;
-}
-
-.block[data-taxon="Card"]>details>summary>header>h1>.taxon::before {
-  content: "🗂️ ";
-}
+/* Spaced-repetition cards (trees/cards/, \taxon{Card}) carry no block styling
+   of their own. They used to be painted as a blue flashcard, question and
+   answer together, which fought with every other taxon on the page and gave
+   away the answer besides. A card is structurally an exercise — a question
+   whose answer you should attempt before reading — so it now renders like
+   one: an ordinary taxon heading with the answer behind \foldout's triangle
+   (see \prompt in base-macros). Nothing to style here; the fold-out rules
+   below do the work. */
 
 footer>section {
   margin-bottom: 1em;
@@ -508,6 +492,24 @@ details>summary>header {
   display: inline;
 }
 
+/* The one-line description a collapsed listing keeps visible — see the
+   listing-blurb variable in tree.xsl. The header above it is inline, so this
+   already starts its own line; it only wants its top margin pulled in so the
+   heading and its description read as one unit rather than two. Nothing below
+   it: section.block>details already carries the gap between two stacked
+   listings, and adding more here just doubles it. */
+details>summary>p {
+  margin: .2em 0 0 0;
+}
+
+/* Opened, the paragraph is no longer the last thing in the block — it now sits
+   directly above the rows it describes, and needs the ordinary paragraph space
+   under it that it had back when it rendered in the body. Without this the
+   description and the first entry read as one run of text. */
+details[open]>summary>p {
+  margin-bottom: 1em;
+}
+
 details h1 {
   font-size: 13pt;
   display: inline;
@@ -550,6 +552,52 @@ section.block>details[open] {
   margin-bottom: 1em;
 }
 
+/* Fold-outs — \foldout in base-macros, the block a proof, a solution, or a
+   card's answer hides behind. On an index page a collapsed entry needs no
+   affordance: the page is visibly a list of things to open. Mid-article it
+   needs one, because the theme hides the browser's own disclosure marker
+   everywhere (details>summary::marker above) and a bare label reading
+   "Solution" looks like it introduces the solution rather than conceals it —
+   a reader scrolls past the thing they came for.
+
+   The glyph is the whole of what lives here, because it is the whole of what
+   an inline style cannot do: it depends on whether the <details> is open, and
+   no inline style can see state. Typography stays on the macro, where the
+   accent is — a folded label is its callout's label, not a piece of chrome, so
+   it keeps that callout's color and weight and the triangle inherits them. */
+.foldout {
+  cursor: pointer;
+}
+
+.foldout::before {
+  content: "▸";
+  display: inline-block;
+  /* Fixed box so the label does not shift sideways when the glyph swaps. */
+  width: 1.1em;
+  /* A shade behind its label, whatever color that label happens to be — the
+     glyph is a hint, and at full strength a solid triangle out-weighs the word
+     it points at. As a fraction rather than a color it holds for the grey
+     control and for every callout accent alike. */
+  opacity: .7;
+}
+
+details[open]>summary>.foldout::before {
+  content: "▾";
+}
+
+/* A fold-out is a bare <details>, not a subtree, so it carries none of the
+   spacing section.block>details supplies. Standing on its own in the body it
+   still wants a paragraph's worth of room; inside a callout it wants none,
+   because the callout's own padding is already the gap and any margin here
+   shows up as a strip of tint below the last line. */
+details:has(>summary>.foldout) {
+  margin-bottom: 1em;
+}
+
+.jms-callout>details:has(>summary>.foldout) {
+  margin-bottom: 0;
+}
+
 /* Index entries — the listing rows emitted by tree.xsl's index-entry rule for
    a collapsed transclusion inside a \meta{index}{true} page. They render the
    same heading a collapsed <details> would, minus the <details>, so these
@@ -584,6 +632,41 @@ a.index-entry-link {
 
 a.index-entry-link:hover {
   background-color: rgba(0, 100, 255, .1);
+}
+
+/* No taxon prefix on a listing row. A taxon classifies something you are
+   reading; in a listing you are choosing what to read, and the page has
+   already said what the list is — "Reference. Motion-Planning via …" under a
+   heading that reads "Research" spends its first ten characters restating it.
+   Applies to every listing, so the stray "Definition." in the recently-edited
+   listing goes too; nowhere else currently shows a taxon in a row. */
+.index-entry h1 > .taxon {
+  display: none;
+}
+
+/* Reference rows carry more than any other kind: a thumbnail, a title long
+   enough to wrap, and three stacked metadata lines (year, authors, links).
+   Left at the 12pt a blog row uses they become the heaviest thing on the home
+   page, which inverts the emphasis — the listing should be scannable, not
+   dominant. One step down evens the two listings out. */
+section.block.index-entry[data-taxon="Reference"] {
+  font-size: 11pt;
+}
+
+/* Smaller thumbnails in a listing than on the reference's own page, where the
+   figure is the subject rather than an identifying glance. */
+.index-entry .frontmatter-image img {
+  width: 60px;
+}
+
+/* A reference's slug is its citekey, and citekeys are built to be unique and
+   greppable rather than short — [kanariosMotionPlanningContrastiveReinforcement2025]
+   runs longer than most of the titles it trails. Drop it from listing rows
+   only: the title beside it already links to the same page, so the row loses
+   nothing but the noise, and the reference's own page still shows it. Blog
+   slugs like [005F] are short and stay. */
+.index-entry[data-taxon="Reference"] > header > h1 > a.slug {
+  display: none;
 }
 
 nav#toc {
@@ -678,12 +761,23 @@ nav#toc li {
 }
 
 a.link.local,
-.link.local a,
-a.slug {
+.link.local a {
   box-shadow: none;
   text-decoration-line: underline;
   text-decoration-style: dotted;
  }
+
+/* The bracketed slug beside a title is not prose, so it does not need the
+   dotting that tells a reader some run of body text is secretly a link. The
+   brackets are the affordance, the gray low-weight treatment sets it apart
+   from the title, and the hover tint confirms it clicks — same reasoning as
+   a.index-entry-link. Dotting on top of all three reads as noise, and in a
+   listing row it made the slug the only underlined thing beside an
+   undotted title. */
+a.slug {
+  box-shadow: none;
+  text-decoration: none;
+}
 
 ninja-keys::part(ninja-action) {
   white-space: nowrap;
