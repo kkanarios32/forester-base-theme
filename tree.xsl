@@ -458,7 +458,7 @@ document.addEventListener('keydown', function(e) {
     <xsl:choose>
       <xsl:when test="$is-index-entry and ../f:route">
         <a class="index-entry-link" href="{../f:route}">
-          <xsl:apply-templates />
+          <xsl:apply-templates mode="row-title" />
         </a>
       </xsl:when>
       <xsl:otherwise>
@@ -566,10 +566,52 @@ document.addEventListener('keydown', function(e) {
             <xsl:apply-templates select="f:meta[@name='openreview']" />
             <xsl:apply-templates select="f:meta[@name='poster']" />
             <xsl:apply-templates select="f:meta[@name='video']" />
-            <!-- Last in the line: the date and author say what this is, the
+            <!-- Last of the facts: the date and author say what this is, the
                  reading time says what it costs, which is what a reader
                  deciding whether to open it wants read to them last. -->
             <xsl:apply-templates select="f:meta[@name='reading-time'][. = 'true']" />
+            <!-- The review-mode toggle, after the facts because it is not one:
+                 it is the page's one control, and it turns every inlined card
+                 on it between two readings. Off — the default — the answers are
+                 open, because a page carrying cards is read at least as often
+                 to revise the material as to be quizzed on it. On, every answer
+                 folds away at once and the page is a self-test. The label names
+                 what a click does rather than what is true: "Collapse cards"
+                 while the answers are open, "Expand cards" once they are away.
+                 Both end in the same word, which is what lets the control sit
+                 still while only the verb changes.
+
+                 It belongs in this line and not in the site nav beside Home.
+                 The nav is where the page goes; the metadata is what the page
+                 is, and a mode of this page is a fact about it. It also stops
+                 the control being a free-floating object: as one <li> among the
+                 others it inherits the line's size, colour, baseline and the
+                 separator, none of which had to be positioned by hand.
+
+                 Two conditions. The tree must be the document element, so the
+                 control is emitted once for the page and not again for every
+                 subtree with a metadata line of its own. And the page must
+                 render an inlined card: a Card tree nested inside another tree
+                 — a card's own page is the document element and so has none —
+                 and outside f:backmatter, where a card is a Backlinks row
+                 rather than something to answer. That test reads the source
+                 and so still over-fires on an index page, whose listings hold
+                 card trees it renders as rows; .review-mode-control in
+                 style.css makes the final call.
+
+                 The control does not open or close any <details>: it decides
+                 whether the fold is honoured. So the native carets keep working
+                 underneath, and a card opened by hand in review mode stays open
+                 when the toggle goes back off. -->
+            <xsl:if test="not(../parent::*) and ..//f:tree[f:frontmatter/f:taxon = 'Card'][not(ancestor::f:backmatter)]">
+              <li class="meta-item">
+                <label class="review-mode-control">
+                  <input type="checkbox" />
+                  <span class="review-mode-enter">Collapse cards</span>
+                  <span class="review-mode-leave">Expand cards</span>
+                </label>
+              </li>
+            </xsl:if>
           </ul>
           </xsl:if>
         </div>
@@ -667,12 +709,20 @@ document.addEventListener('keydown', function(e) {
   <xsl:template match="f:backmatter//f:backmatter">
   </xsl:template>
 
-  <!-- Spaced-repetition cards (\taxon{Card}, trees/cards/) are Anki prompts;
-       keep them out of the backlink/context footer of the notes they link. A
-       card transcluded into a note's mainmatter still renders — this only
-       suppresses cards appearing as backlinks. -->
-  <xsl:template match="f:backmatter//f:tree[normalize-space(f:frontmatter/f:taxon) = 'Card']" priority="10">
-  </xsl:template>
+  <!-- A card in backmatter is a row like every other row, and there is no rule
+       here for it any more. It used to be dropped outright: a card is a prompt,
+       and a prompt turning up under Backlinks looked like the footer trying to
+       quiz you. But that reasoning was about how the card *rendered*, not about
+       whether it belonged — and once the card-embed rule below took the callout
+       treatment away from backmatter, what was left was an ordinary listing
+       row: a title, a slug, a date. A Definition that tests the same idea is
+       listed there; the card was the one thing a note could link and not be
+       linked back from, which is a hole in the graph rather than a tidiness.
+
+       So the suppression is gone, and with it the three
+       index-entry[data-taxon="Card"] rules in style.css that set a card row
+       lighter and tighter than its neighbours. A card under Context or
+       Backlinks now sets exactly as a Definition does. -->
 
   <!-- Index-page entries. A tree marked \meta{index}{true} is a navigation page
        — the home page, 0002 Blog, RCNT — rather than a piece of writing, and
@@ -725,6 +775,73 @@ document.addEventListener('keydown', function(e) {
         </xsl:attribute>
       </xsl:if>
       <xsl:apply-templates select="f:frontmatter" />
+    </section>
+  </xsl:template>
+
+  <!-- A card's answer, on the card's own page: shown, not folded.
+
+       \prompt withholds the answer behind a caret because an inlined card is a
+       prompt in the middle of someone else's prose, and a page of them has to
+       read as a self-test rather than a transcript. None of that applies where
+       the card *is* the page: you arrived at /JFWY/ to read the card, there is
+       nothing to test yourself against that you have not already chosen to
+       look at, and a lone triangle under a question is a worse page than the
+       answer itself. So the <details> and its empty <summary> are dropped and
+       the answer renders as ordinary body text, which leaves a card page
+       reading like a Definition or a Theorem page — a taxon, a title, and the
+       content under it.
+
+       This has to happen here rather than in style.css: no CSS opens a
+       <details>. Scoped by taxon and by the tree being the document element,
+       so a transcluded card keeps its fold, and so does every other \foldout
+       on the site — a proof, a solution, an exercise. -->
+  <xsl:template match="html:details[
+    ancestor::f:tree[1]/f:frontmatter/f:taxon = 'Card'
+    and not(ancestor::f:tree[1]/parent::*)]">
+    <xsl:apply-templates select="node()[not(self::html:summary)]" />
+  </xsl:template>
+
+  <!-- A transcluded card renders as a callout, not as a section.
+
+       A card tree's whole body is \prompt: one question and one folded answer.
+       Wrapping that in the full tree apparatus — an h1 at section size, the
+       "Card." taxon, a slug, a date and author line, a <details> around the
+       lot — sets a flashcard at the same rank as the chapter that transcludes
+       it, and stacks a callout in the card's accent inside the card. IR7B carries
+       thirteen of them under one heading; at that count the page reads as
+       thirteen subsections rather than as a self-test.
+
+       So the heading goes entirely, and what is left is the card: the question
+       in prose, and the answer behind a caret in the margin. A card's name
+       is authorial bookkeeping — the idea it turns on, the handle a concept
+       note links it by — and it is worth showing where the card is the
+       subject. Inlined it is the one line on the block that you are not
+       supposed to be reading: the whole point of a card is to meet the
+       question cold, and a name sitting above it is a hint. The slug stays,
+       though — it gives away nothing, and without it an inlined card is a dead
+       end, with no way through to the card's own page. The block's own setting
+       — margin, padding, no rule — is the shared section[data-taxon="Card"]
+       rule in style.css.
+
+       This outranks the index-entry rule above, so it holds on an index page
+       too: a deck listing on AGCA is a page of cards, and cards there should
+       look like cards. Stripping them to bare titles the way an index page
+       strips its other entries loses the question — which is the half of a
+       card worth seeing when you are deciding whether you know it.
+
+       Two things stay as they were. A card's own page is exempt — the rule
+       wants a parent element, and the page's own tree is the document element
+       — so the card keeps a real title, taxon and metadata where it is the
+       subject. And f:backmatter is exempt, so a card turning up under
+       Context or Backlinks is a row like every other row there: that footer
+       is a list of places to go, not something to read. -->
+  <xsl:template priority="6" match="f:tree[
+    f:frontmatter/f:taxon = 'Card'
+    and parent::*
+    and not(ancestor::f:backmatter)]">
+    <section class="block card-embed" data-taxon="Card">
+      <xsl:apply-templates select="f:frontmatter/f:display-uri" />
+      <xsl:apply-templates select="f:mainmatter" />
     </section>
   </xsl:template>
 
